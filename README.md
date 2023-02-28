@@ -21,6 +21,7 @@ https://chromedriver.chromium.org/downloads
 3. Ensure you have python installed
 4. pip install selenium and cryptography
 5. make a directory for the scripts to live in (i.e. C:\Toolbox\Tridot\ ) 
+   - Note: The downloader will create and use a Temp folder beneath the install dir. Do not remove or add any files to that temp dir. 
 6. copy the two PY scripts to that directory
 7. run python c:\toolbox\tridot\GenEncryptedPassword.py
 
