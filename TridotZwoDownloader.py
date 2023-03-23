@@ -7,11 +7,18 @@ from cryptography.fernet import Fernet
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from jsonobject import *
 import configparser
 import os
 import time
 import shutil
 import os
+
+# TODO 
+#  - MAX WAIT TIME OF 5MIN should come from ini
+#  - Figure out how to make it work headless
+#  - Figure out how to make it work set GPS coordinates from INI
+#  - Figure out if it works with 2 workouts on the same day or not
 
 # Get where the script lives
 script_path = os.path.abspath(__file__)
@@ -36,6 +43,9 @@ username = config.get('Tridot', 'username')
 # Get encrypted password from config file
 encrypted_password = config.get('Tridot', 'password')
 
+# Home URL
+login_url = config.get('Tridot','Login_URL')
+
 # Decrypt password
 key = config.get('Tridot', 'key')
 f = Fernet(key)
@@ -47,22 +57,46 @@ webdriver_path = config.get('Tridot','WebDriverPath')
 # Get the workout filename
 WorkoutDir = config.get('Tridot','WorkoutDir')
 
+# Get location info
+Latitude = config.get('Tridot','latitude')
+Longitude = config.get('Tridot','longitude')
+
 # Set the path to the log file
 log_path = "webdriver.log"
 
+# Set the debug mode
+Debug_String = config.get('Tridot','Debug')
+Debug = False
+if Debug_String.lower() == 'true':
+    Debug = True
+else:
+    Debug = False
+  
 # Create a ChromeOptions object with headless mode enabled
-chrome_options = Options()
-chrome_options.add_experimental_option('prefs', {
-    'download.prompt_for_download': False,
-    'download.default_directory': tmp_folder_path
-})
-#chrome_options.add_argument("--headless")
+chrome_options = Options() 
+chrome_options.add_argument('--window-size=1920x1080')
+
+if not Debug:
+    chrome_options.add_argument("--headless")
+
+prefs = {
+    'profile.default_content_setting_values.notifications': 1,
+    'profile.managed_default_content_settings.geolocation': 1,
+    "profile.default_content_settings.popups": 0,    
+    "download.default_directory": tmp_folder_path,  
+    "download.prompt_for_download": False, 
+    "download.directory_upgrade": True
+}
+
+chrome_options.add_experimental_option('prefs', prefs)
+
 
 # Create a new instance of the ChromeDriver with ChromeOptions
 browser_driver = webdriver.Chrome(executable_path=webdriver_path, options=chrome_options)
+browser_driver.maximize_window()
 
 # Navigate to Tridot website
-browser_driver.get("https://app.tridot.com")
+browser_driver.get(login_url)
 
 # Enter username and password
 username_input = browser_driver.find_element_by_id("exampleInputusername1")
